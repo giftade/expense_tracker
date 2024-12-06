@@ -10,5 +10,11 @@
     "description": "Transport",
     "amount": 20,
     "date": "2024-12-03"
+  },
+  {
+    "id": 3,
+    "description": "Rent",
+    "amount": 500,
+    "date": "2024-12-05"
   }
 ]
