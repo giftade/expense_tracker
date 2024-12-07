@@ -64,9 +64,16 @@ func AddExpenses(description string, amount float32) error {
 		return err
 	}
 	}
+	var newId int
+	if len(Expenses) > 0 {
+		lastExpense := Expenses[len(Expenses)-1] 
+		newId = lastExpense.ID + 1
+	} else {
+		newId = 1
+	}
 
 	newExpense := &Expense{
-		ID:          4,
+		ID:          newId,
 		Description: description,
 		Amount:      amount,
 		Date:        time.Now().Format("2006-01-02"),
@@ -85,6 +92,6 @@ func AddExpenses(description string, amount float32) error {
 		return err
 	}
 
-	fmt.Println("Expense added")
+	fmt.Printf("Expense added successfully (ID: %v)", newId)
 	return nil
 }
