@@ -18,15 +18,28 @@ type Expense struct {
 
 func ListExpenses() error {
 	log.SetFlags(log.Lshortfile)
-	file, err := os.ReadFile("assets/expense.json")
+
+	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatalf("err: %v", err)
+		return err
+	}
+	defer file.Close()
+
+	fileStat, err := file.Stat()
 	if err != nil {
 		log.Fatalf("err: %v", err)
 		return err
 	}
 
+	if fileStat.Size() <= 0 {
+		fmt.Println("No expenses to list")
+		return nil
+	}
+
 	var Expenses []Expense
 
-	err = json.Unmarshal(file, &Expenses)
+	err = json.NewDecoder(file).Decode(&Expenses)
 	if err != nil {
 		log.Fatalf("err: %v", err)
 		return err
