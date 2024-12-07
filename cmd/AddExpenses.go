@@ -4,6 +4,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var description string
+var amount float32
+
 // AddExpensesCmd represents the AddExpenses command
 var AddExpensesCmd = &cobra.Command{
 	Use:     "Add Expenses",
@@ -11,20 +14,16 @@ var AddExpensesCmd = &cobra.Command{
 	Short:   "Add expenses",
 	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		AddExpenses()
+		AddExpenses(description, amount)
 	},
 }
 
 func init() {
+	AddExpensesCmd.Flags().StringVar(&description, "description", "", "description of expense")
+
+	AddExpensesCmd.Flags().Float32Var(&amount, "amount", 0, "cost of expense")
+
+	
 	rootCmd.AddCommand(AddExpensesCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// AddExpensesCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// AddExpensesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
