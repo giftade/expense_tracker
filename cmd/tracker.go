@@ -108,3 +108,41 @@ func AddExpenses(description string, amount float32) error {
 	fmt.Printf("Expense added successfully (ID: %v)", newId)
 	return nil
 }
+
+func ExpenseSummary() error{
+file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatalf("err: %v", err)
+		return err
+	}
+
+	defer file.Close()
+
+	fileStat, err := file.Stat()
+	if err != nil {
+		log.Fatalf("err: %v", err)
+		return err
+	}
+
+	if fileStat.Size() <= 0 {
+		fmt.Println("No expenses yet")
+		return nil
+	}
+
+	var Expenses []Expense
+
+	err = json.NewDecoder(file).Decode(&Expenses)
+	if err != nil {
+		log.Fatalf("err: %v", err)
+		return err
+	}
+	
+	var totalExpense float32
+
+	for _, expense := range Expenses {
+		totalExpense += expense.Amount
+	}
+
+	fmt.Printf("Total expenses: $%v", totalExpense)
+	return nil
+}
