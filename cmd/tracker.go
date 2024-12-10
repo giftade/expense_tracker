@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -50,6 +51,14 @@ func ListExpenses() error {
 }
 
 func AddExpenses(description string, amount float32) error {
+	description = strings.TrimSpace(description)
+	if amount < 1 {
+		return fmt.Errorf("amount must be greater than 0, got: %v", amount)
+	}
+	if description == "" {
+		return fmt.Errorf("description cannot be empty")
+	}
+
 	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %v", err)
@@ -96,7 +105,7 @@ func AddExpenses(description string, amount float32) error {
 		return fmt.Errorf("failed to encode file: %v", err)
 	}
 
-	fmt.Printf("Expense added successfully (ID: %v)", newId)
+	fmt.Printf("Expense added successfully (ID: %v, Amount: %v, Description: %s)\n", newId, amount, description)
 	return nil
 }
 
@@ -172,7 +181,6 @@ func DeleteExpense(id int) error {
 		return nil
 	}
 
-	
 	if err := file.Truncate(0); err != nil {
 		return fmt.Errorf("failed to truncate file: %v", err)
 	}

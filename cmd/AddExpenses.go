@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +16,11 @@ var AddExpensesCmd = &cobra.Command{
 	Short:   "Add expenses",
 	Long:    ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		AddExpenses(description, amount)
+		
+		err := AddExpenses(description, amount)
+    if err != nil {
+        fmt.Println("Error:", err)
+    }
 	},
 }
 
