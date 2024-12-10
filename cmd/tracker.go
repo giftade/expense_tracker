@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -17,19 +16,16 @@ type Expense struct {
 }
 
 func ListExpenses() error {
-	log.SetFlags(log.Lshortfile)
 
 	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
 
 	fileStat, err := file.Stat()
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to get file stats: %v", err)
 	}
 
 	if fileStat.Size() <= 0 {
@@ -41,8 +37,7 @@ func ListExpenses() error {
 
 	err = json.NewDecoder(file).Decode(&Expenses)
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to Decode file: %v", err)
 	}
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 5, ' ', 0)
 
@@ -57,15 +52,13 @@ func ListExpenses() error {
 func AddExpenses(description string, amount float32) error {
 	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to open file: %v", err)
 	}
 	defer file.Close()
 
 	fileStat, err := file.Stat()
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to get file stats: %v", err)
 	}
 
 	var Expenses []Expense
@@ -73,13 +66,12 @@ func AddExpenses(description string, amount float32) error {
 	if fileStat.Size() != 0 {
 		err = json.NewDecoder(file).Decode(&Expenses)
 		if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
-	}
+			return fmt.Errorf("failed to decode file: %v", err)
+		}
 	}
 	var newId int
 	if len(Expenses) > 0 {
-		lastExpense := Expenses[len(Expenses)-1] 
+		lastExpense := Expenses[len(Expenses)-1]
 		newId = lastExpense.ID + 1
 	} else {
 		newId = 1
@@ -101,27 +93,24 @@ func AddExpenses(description string, amount float32) error {
 	err = encoder.Encode(Expenses)
 
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to encode file: %v", err)
 	}
 
 	fmt.Printf("Expense added successfully (ID: %v)", newId)
 	return nil
 }
 
-func ExpenseSummary() error{
-file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
+func ExpenseSummary() error {
+	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to get open file: %v", err)
 	}
 
 	defer file.Close()
 
 	fileStat, err := file.Stat()
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to get file stats: %v", err)
 	}
 
 	if fileStat.Size() <= 0 {
@@ -133,10 +122,9 @@ file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 
 	err = json.NewDecoder(file).Decode(&Expenses)
 	if err != nil {
-		log.Fatalf("err: %v", err)
-		return err
+		return fmt.Errorf("failed to decode file: %v", err)
 	}
-	
+
 	var totalExpense float32
 
 	for _, expense := range Expenses {
@@ -144,5 +132,60 @@ file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	}
 
 	fmt.Printf("Total expenses: $%v", totalExpense)
+	return nil
+}
+
+func DeleteExpense(id int) error {
+	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %v", err)
+	}
+	defer file.Close()
+
+	fileStat, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("failed to get file stats: %v", err)
+	}
+
+	if fileStat.Size() <= 0 {
+		fmt.Println("No expenses to delete yet")
+		return nil
+	}
+
+	var expenses []Expense
+	if err := json.NewDecoder(file).Decode(&expenses); err != nil {
+		return fmt.Errorf("failed to decode JSON: %v", err)
+	}
+
+	var newExpenses []Expense
+	found := false
+	for _, expense := range expenses {
+		if expense.ID == id {
+			found = true
+			continue
+		}
+		newExpenses = append(newExpenses, expense)
+	}
+
+	if !found {
+		fmt.Printf("Expense with ID: %v not found\n", id)
+		return nil
+	}
+
+	
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("failed to truncate file: %v", err)
+	}
+	if _, err := file.Seek(0, 0); err != nil {
+		return fmt.Errorf("failed to seek to start of file: %v", err)
+	}
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(newExpenses); err != nil {
+		return fmt.Errorf("failed to encode JSON: %v", err)
+	}
+
+	fmt.Printf("Expense with ID: %v deleted successfully\n", id)
 	return nil
 }
