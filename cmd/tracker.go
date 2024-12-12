@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -109,7 +110,7 @@ func AddExpenses(description string, amount float32) error {
 	return nil
 }
 
-func ExpenseSummary() error {
+func ExpenseSummary(month int) error {
 	file, err := os.OpenFile("assets/expense.json", os.O_RDWR, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to get open file: %v", err)
@@ -133,10 +134,61 @@ func ExpenseSummary() error {
 	if err != nil {
 		return fmt.Errorf("failed to decode file: %v", err)
 	}
+if month < 0 ||month > 12 {
+	fmt.Printf("month %v does not exist", month)
+	return nil
+}
+	if month >= 1 && month <= 12 {
+		var totalExpense float32
+		
+		for _, expense := range Expenses {
+			expenseDate := strings.Split(expense.Date, "-")
+
+			expenseMonth := expenseDate[1]
+			expenseMonthInt, _ := strconv.Atoi(expenseMonth)
+
+			if month == expenseMonthInt {
+				totalExpense += expense.Amount
+			}
+	}
+
+	var newMonth string
+
+	switch month {
+	case 1:
+		newMonth = "January"
+	case 2:
+		newMonth = "February"
+	case 3:
+		newMonth = "March"
+	case 4:
+		newMonth = "April"
+	case 5:
+		newMonth = "May"
+	case 6:
+		newMonth = "June"
+	case 7:
+		newMonth = "July"
+	case 8:
+		newMonth = "August"
+	case 9:
+		newMonth = "September"
+	case 10:
+		newMonth = "October"
+	case 11:
+		newMonth = "November"
+	case 12:
+		newMonth = "December"
+	}
+
+	fmt.Printf("Total expenses for %s: $%v\n", newMonth, totalExpense)
+	return nil
+}
 
 	var totalExpense float32
 
 	for _, expense := range Expenses {
+
 		totalExpense += expense.Amount
 	}
 
